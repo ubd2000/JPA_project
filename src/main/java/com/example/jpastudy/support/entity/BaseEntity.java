@@ -1,12 +1,13 @@
 package com.example.jpastudy.support.entity;
 
+import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 /**
@@ -14,16 +15,15 @@ import java.time.LocalDateTime;
  *
  * @author : jkkim
  */
+@Getter
 @MappedSuperclass
-public class BaseEntity {
+@EntityListeners(AuditingEntityListener.class)
+//추상 클래스
+public abstract class BaseEntity {
 
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-    @Column(length = 20)
-    private String createdById;
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
-    @Column(length = 20)
-    private String updatedById;
+    @CreatedDate // Entity 생성시 자동으로 날짜세팅
+    private LocalDateTime createdDate;
+    @LastModifiedDate // Entity 수정시 자동으로 날짜세팅
+    private LocalDateTime modifiedDate;
 
 }

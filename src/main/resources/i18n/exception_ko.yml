@@ -1,0 +1,13 @@
+# exception_ko.yml
+unKnown:
+  code: "-9999"
+  msg: "알수 없는 오류가 발생하였습니다."
+userNotFound:
+  code: "-1000"
+  msg: "존재하지 않는 게시물입니다."
+FileNotFound:
+  code: "-5"
+  msg: "파일이 존재하지 않습니다."
+AttachFileNotFound:
+  code: "-1"
+  msg: "게시글에 파일이 존재하지 않습니다."

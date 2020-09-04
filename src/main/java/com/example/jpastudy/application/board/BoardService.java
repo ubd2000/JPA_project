@@ -1,17 +1,15 @@
 package com.example.jpastudy.application.board;
 
-import com.example.jpastudy.application.attach.AttachFile;
 import com.example.jpastudy.application.attach.AttachFileDto;
 import com.example.jpastudy.application.attach.AttachFileRepository;
+import com.example.jpastudy.application.attach.AttachFileService;
+import com.example.jpastudy.support.exception.CBoardNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.persistence.EntityNotFoundException;
 
 /**
  * description
@@ -23,6 +21,7 @@ import javax.persistence.EntityNotFoundException;
 @RequiredArgsConstructor
 public class BoardService {
 
+    private final AttachFileService attachFileService;
     private final BoardRepository boardRepository;
     private final AttachFileRepository attachFileRepository;
     private final ModelMapper modelMapper;
@@ -34,9 +33,9 @@ public class BoardService {
      * @param pageable
      * @return
      */
-    public Page<BoardDto> findAllBoard(Pageable pageable) {
-        return boardRepository.findAll(pageable)
-                .map(board -> modelMapper.map(board, BoardDto.class));
+    public Page<BoardDto.Res> findAllBoard(Pageable pageable) {
+
+        return boardRepository.findAll(pageable).map(BoardDto.Res::new);
     }
 
     /**
@@ -45,10 +44,18 @@ public class BoardService {
      * @param boardSeq
      * @return
      */
-    public BoardDto findBoardById(Long boardSeq) {
-        return boardRepository.findById(boardSeq)
-                .map(board -> modelMapper.map(board, BoardDto.class))
-                .orElseThrow(EntityNotFoundException::new);
+    public BoardDto.Res findBoardById(Long boardSeq) {
+        Board board = boardRepository.findById(boardSeq).orElseThrow(CBoardNotFoundException::new);
+        board.viewCnt(board.getViewCnt() + 1);
+        BoardDto.Res boardRes = new BoardDto.Res(board);
+
+        AttachFileDto.Res attachFileDtoRes = attachFileService.findAttachFileById(boardRes.getFileId());
+
+        if(attachFileDtoRes != null) {
+            boardRes.setAttachFileDtoRes(attachFileDtoRes);
+        }
+
+        return boardRes;
     }
 
     /**
@@ -57,32 +64,11 @@ public class BoardService {
      * @param boardDto
      * @return
      */
-    public BoardDto insertBoard(BoardDto boardDto, MultipartFile files) {
-        Board board = modelMapper.map(boardDto, Board.class);
-        AttachFileDto attachFileDto = new AttachFileDto();
-        if(!files.isEmpty()) {
+    @Transactional
+    public BoardDto.Res insertBoard(BoardDto.CreateBoard boardDto) {
+        Board board = boardRepository.save(boardDto.toEntity());
 
-            String baseDir = "C:\\download\\";
-            String filePath = baseDir + files.getOriginalFilename();
-
-            attachFileDto.setBoardSeq(board.getBoardSeq());
-            attachFileDto.setAttachFileName(files.getOriginalFilename());
-            attachFileDto.setAttachFileSize(Long.toString(files.getSize()));
-            attachFileDto.setAttachFileRoute(filePath);
-        }
-        AttachFile attachFile = modelMapper.map(attachFileDto, AttachFile.class);
-//        board.setAttachFile(attachFile);
-        attachFile.setBoard(board);
-
-
-
-//        if(attachFileDto != null ) {
-//            attachFileDto.setBoardSeq(board.getBoardSeq());
-//            AttachFile attachFile = modelMapper.map(attachFileDto, AttachFile.class);
-//            board.setAttachFileEntity(attachFile);
-//        }
-        boardRepository.save(board);
-        return boardDto;
+        return new BoardDto.Res(board);
     }
 
     /**
@@ -111,5 +97,7 @@ public class BoardService {
     public void deleteBoard(Long boardSeq) {
         boardRepository.deleteById(boardSeq);
     }
+
+
 
 }

@@ -1,16 +1,13 @@
 package com.example.jpastudy.application.attach;
 
-import com.example.jpastudy.application.board.Board;
 import com.example.jpastudy.support.entity.BaseEntity;
-import jdk.nashorn.internal.objects.annotations.Constructor;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
+import lombok.*;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
+
 
 /**
  * description
@@ -18,22 +15,24 @@ import javax.persistence.*;
  * @author : jkkim
  */
 @Entity
-@Table(name = "ATTACH_FILE")
 @Getter
-@Setter
-@ToString
-public class AttachFile extends BaseEntity {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "ATTACH_FILE")
+public class AttachFile {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "attach_seq")
-    @GeneratedValue(generator="SharedPrimaryKeyGenerator")
-    @GenericGenerator(name="SharedPrimaryKeyGenerator",strategy="foreign",parameters = @Parameter(name="property", value = "board"))
-    private Long boardSeq;
+    private Long attachSeq;
     private String attachFileName;
-    private String attachFileSize;
+    private Long attachFileSize;
     private String attachFileRoute;
-    @OneToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name = "attach_seq",referencedColumnName="board_seq")
-    private Board board;
 
+    @Builder
+    public AttachFile(Long attachSeq, String attachFileName, Long attachFileSize, String attachFileRoute) {
+        this.attachSeq = attachSeq;
+        this.attachFileName = attachFileName;
+        this.attachFileSize = attachFileSize;
+        this.attachFileRoute = attachFileRoute;
+    }
 }
