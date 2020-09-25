@@ -31,7 +31,9 @@ import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * description
@@ -72,20 +74,23 @@ public class BoardController {
      */
     @ApiOperation(value = "게시판 조회", notes = "모든 게시판을 조회한다")
     @GetMapping("/boards")
-    public Page<BoardDto.Res> findAllBoard(Pageable pageable, Model model) {
+    public Map<String, Object> findAllBoard(Pageable pageable, Model model) {
         List<AttachFileDto.Res> attachFileList = attachFileService.fineAllAttachFile();
-        Page<BoardDto.Res> test = boardService.findAllBoard(pageable);
+        Page<BoardDto.Res> boardList = boardService.findAllBoard(pageable);
+        List<Integer> pageList = boardService.getPageList(pageable.getPageNumber(), pageable.getPageSize());
+        Map<String, Object> resultData = new HashMap<>();
 
-        for (int i = 0; i < test.getContent().size(); i++) {
+        for (int i = 0; i < boardList.getContent().size(); i++) {
             for (int j = 0; j < attachFileList.size(); j++) {
-                if (test.getContent().get(i).getFileId() == attachFileList.get(j).getAttachSeq()) {
-                    test.getContent().get(i).setAttachFileName(attachFileList.get(j).getAttachFileName());
-                    test.getContent();
+                if (boardList.getContent().get(i).getFileId() == attachFileList.get(j).getAttachSeq()) {
+                    boardList.getContent().get(i).setAttachFileName(attachFileList.get(j).getAttachFileName());
+                    boardList.getContent();
                 }
             }
         }
-
-        return test;
+        resultData.put("boardList", boardList);
+        resultData.put("pageList", pageList);
+        return resultData;
     }
 
     /**

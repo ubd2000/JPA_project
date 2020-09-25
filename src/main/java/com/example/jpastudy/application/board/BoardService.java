@@ -11,6 +11,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * description
  *
@@ -25,6 +28,9 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final AttachFileRepository attachFileRepository;
     private final ModelMapper modelMapper;
+
+    private static final int BLOCK_PAGE_NUM_COUNT = 5;  // 블럭에 존재하는 페이지 번호 수
+    private int PAGE_POST_COUNT = 3;       // 한 페이지에 존재하는 게시글 수
 
 
     /**
@@ -51,7 +57,7 @@ public class BoardService {
 
         AttachFileDto.Res attachFileDtoRes = attachFileService.findAttachFileById(boardRes.getFileId());
 
-        if(attachFileDtoRes != null) {
+        if (attachFileDtoRes != null) {
             boardRes.setAttachFileDtoRes(attachFileDtoRes);
         }
 
@@ -98,6 +104,43 @@ public class BoardService {
         boardRepository.deleteById(boardSeq);
     }
 
+    @Transactional
+    public Long getBoardCount() {
+        return boardRepository.count();
+    }
+
+    public List<Integer> getPageList(Integer curPageNum, Integer curPageSize) {
+        List<Integer> pageList = new ArrayList<>();
+
+        PAGE_POST_COUNT = curPageSize;
+
+        // 총 게시글 갯수
+        Double postsTotalCount = Double.valueOf(this.getBoardCount());
+
+        // 총 게시글 기준으로 계산한 마지막 페이지 번호 계산 (올림으로 계산)
+        Integer totalLastPageNum = (int)(Math.ceil((postsTotalCount/PAGE_POST_COUNT)));
+
+        Integer startPageNum = 0;
+        Integer lastPageNum = 0;
+        Integer tempPageNum = 0;
+
+        if (curPageNum % BLOCK_PAGE_NUM_COUNT == 0) {
+            startPageNum = curPageNum + 1;
+            lastPageNum = curPageNum + BLOCK_PAGE_NUM_COUNT;
+        } else {
+            tempPageNum = curPageNum / BLOCK_PAGE_NUM_COUNT;
+            lastPageNum = (tempPageNum + 1) * BLOCK_PAGE_NUM_COUNT;
+            startPageNum = lastPageNum - (BLOCK_PAGE_NUM_COUNT - 1);
+        }
+
+        lastPageNum = (totalLastPageNum < lastPageNum) ? totalLastPageNum : lastPageNum;
+
+        for (int val = startPageNum, idx = 0; val <= lastPageNum; val++, idx++) {
+            pageList.add(idx,val);
+        }
+
+        return pageList;
+    }
 
 
 }

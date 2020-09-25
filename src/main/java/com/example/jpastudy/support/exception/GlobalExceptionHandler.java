@@ -30,13 +30,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = { IOException.class})
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public CommonResult userNotFoundException(HttpServletRequest request, IOException e) {
+    public CommonResult fileNotFoundException(HttpServletRequest request, IOException e) {
         return responseService.getFailResult(Integer.valueOf(getMessage("FileNotFound.code")), getMessage("FileNotFound.msg"));
     }
 
-    @ExceptionHandler(value = { IOException.class})
+    @ExceptionHandler(value = { CFileNotFoundException.class})
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public CommonResult userNotFoundException(HttpServletRequest request, FileNotFoundException e) {
+    public CommonResult attachFileNotFoundException(HttpServletRequest request, CFileNotFoundException e) {
         return responseService.getFailResult(Integer.valueOf(getMessage("AttachFileNotFound.code")), getMessage("AttachFileNotFound.msg"));
     }
 

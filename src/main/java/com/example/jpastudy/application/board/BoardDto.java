@@ -90,6 +90,7 @@ public class BoardDto {
         private Long fileId;
         private String attachFileName;
         private AttachFileDto.Res attachFileDtoRes;
+        private Integer[] pageList;
         //아무런 가공이 없는 LocalDateTime 의 응답 포맷은 배열이 되어 JsonFormat을 사용하기 위해 Jackson 라이브러리 추가
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
         private LocalDateTime createdAt;
